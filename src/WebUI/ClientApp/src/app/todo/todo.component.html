@@ -1,29 +1,38 @@
-<h1>Todo</h1>
+﻿<h1>Todo</h1>
 
 <p>This is a complex todo list component.</p>
 
 <p *ngIf="!lists"><em>Loading...</em></p>
 
 <div *ngIf="lists">
-
   <div class="row">
     <div class="col-sm-4">
       <div class="clearfix">
         <h2 class="float-start">Lists</h2>
         <button class="btn btn-default float-end" title="New List..."
-          (click)="showNewListModal(newListModalTemplate)">
+                (click)="showNewListModal(newListModalTemplate)">
           <i class="bi bi-journal-plus"></i>
         </button>
       </div>
       <ul class="list-group">
-        <li *ngFor="let list of lists; index as i" class="list-group-item"
-          [ngClass]="{ 'active': selectedList == list }" (click)="selectedList = list">
-          <div class="clearfix">
+        <li *ngFor="let list of lists; index as i"
+            class="list-group-item"
+            [ngClass]="{ 'active tw-border-stone-200': selectedList == list }"
+            [ngStyle]="selectedList == list ? { 'background-color': list.colour } : { 'opacity': '50%' }"
+            (click)="selectedList = list">
+  
+          <div class="clearfix" [ngClass]="{ 'text-dark': isLightBackground(list.colour) }">
             <div class="float-start">
+              <button class="badge-light btn btn-sm">
+                <span class="d-block rounded-circle tw-h-4 tw-w-4 tw-border"
+                      [style.background-color]="list.colour"></span>
+              </button>
               {{ list.title }}
             </div>
-            <div class="float-end text-right">
-              <span class="badge badge-light">{{ remainingItems(list) }}</span>
+            <div class="float-end text-right" *ngIf="selectedList == list">
+              <span class="badge badge-light" [ngClass]="{ 'text-dark': isLightBackground(list.colour) }">
+                {{ remainingItems(list) }}
+              </span>
             </div>
           </div>
         </li>
@@ -80,23 +89,38 @@
     </button>
   </div>
   <div class="modal-body">
-    <div class="form-group">
-      <label for="inputListTitle">Title</label>
-      <input type="text" class="form-control" id="inputListTitle" placeholder="List name..."
-        [(ngModel)]="listOptionsEditor.title" (keyup.enter)="updateListOptions()" />
+    <div class="row">
+      <div class="col-md-12 mb-2">
+        <div class="form-group">
+          <label for="inputListTitle">Title</label>
+          <input type="text" class="form-control" id="inputListTitle" placeholder="List name..."
+                 [(ngModel)]="listOptionsEditor.title" (keyup.enter)="updateListOptions()" />
+        </div>
+      </div>
+      <div class="col-md-12 mb-2">
+        <div class="form-group mt-2">
+          <label for="listColor">Accent Color</label>
+          <select id="listColor" class="form-select"
+                  [(ngModel)]="listOptionsEditor.colour">
+            <option *ngFor="let color of supportedColours" [value]="color.code">
+              {{ color.name }}
+            </option>
+          </select>
+        </div>
+      </div>
     </div>
     <div *ngIf="debug">
       <pre>{{ listOptionsEditor | json }}</pre>
     </div>
-  </div>
-  <div class="modal-footer">
-    <div class="clearfix">
-      <div class="float-start">
-        <button class="btn btn-default text-danger" (click)="confirmDeleteList(deleteListModalTemplate)">Delete</button>
-      </div>
-      <div class="float-end">
-        <button class="btn btn-default" (click)="listOptionsModalRef.hide()">Cancel</button>
-        <button class="btn btn-primary" (click)="updateListOptions()">Update</button>
+    <div class="modal-footer">
+      <div class="clearfix">
+        <div class="float-start">
+          <button class="btn btn-default text-danger" (click)="confirmDeleteList(deleteListModalTemplate)">Delete</button>
+        </div>
+        <div class="float-end">
+          <button class="btn btn-default" (click)="listOptionsModalRef.hide()">Cancel</button>
+          <button class="btn btn-primary" (click)="updateListOptions()">Update</button>
+        </div>
       </div>
     </div>
   </div>
@@ -174,22 +198,38 @@
     </button>
   </div>
   <div class="modal-body">
-    <div class="form-group">
-      <label for="title">Title</label>
-      <input type="text" class="form-control" id="title" placeholder="List title..." [(ngModel)]="newListEditor.title"
-        [ngClass]="{ 'is-invalid': newListEditor.error }" (keyup.enter)="addList()" />
-      <div *ngIf="newListEditor.error" class="invalid-feedback">
-        {{ newListEditor.error }}
+    <div class="row">
+      <div class="col-md-12 mb-2">
+        <div class="form-group">
+          <label for="title">Title</label>
+          <input type="text" class="form-control" id="title" placeholder="List title..." [(ngModel)]="newListEditor.title"
+                 [ngClass]="{ 'is-invalid': newListEditor.error }" (keyup.enter)="addList()" />
+          <div *ngIf="newListEditor.error" class="invalid-feedback">
+            {{ newListEditor.error }}
+          </div>
+        </div>
+      </div>
+      <div class="col-md-12 mb-2">
+        <div class="form-group mt-2">
+          <label for="newListColor">Accent Color</label>
+          <select id="newListColor" class="form-select"
+                  [ngClass]="{ 'is-invalid': newListEditor.error }"
+                  [(ngModel)]="newListEditor.colour">
+            <option *ngFor="let color of supportedColours" [value]="color.code">
+              {{ color.name }}
+            </option>
+          </select>
+        </div>
       </div>
     </div>
     <div *ngIf="debug">
       <pre>{{ newListEditor | json }}</pre>
     </div>
-  </div>
-  <div class="modal-footer clearfix">
-    <div class="float-end">
-      <button class="btn btn-default" (click)="newListCancelled()">Cancel</button>
-      <button class="btn btn-primary" (click)="addList()">Create</button>
+    <div class="modal-footer clearfix">
+      <div class="float-end">
+        <button class="btn btn-default" (click)="newListCancelled()">Cancel</button>
+        <button class="btn btn-primary" (click)="addList()">Create</button>
+      </div>
     </div>
   </div>
 </ng-template>
