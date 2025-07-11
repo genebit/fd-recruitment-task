@@ -15,6 +15,7 @@ import {
 })
 export class TodoComponent implements OnInit {
   debug = false;
+  searchTerm: string = '';
   deleting = false;
   deleteCountDown = 0;
   deleteCountDownInterval: any;
@@ -260,5 +261,16 @@ export class TodoComponent implements OnInit {
     clearInterval(this.deleteCountDownInterval);
     this.deleteCountDown = 0;
     this.deleting = false;
+  }
+
+  get filteredItems(): TodoItemDto[] {
+    if (!this.selectedList) return [];
+
+    const term = this.searchTerm.toLowerCase().trim();
+
+    return this.selectedList.items.filter(item =>
+      item.title?.toLowerCase().includes(term) ||
+      item.note?.toLowerCase().includes(term)
+    );
   }
 }
