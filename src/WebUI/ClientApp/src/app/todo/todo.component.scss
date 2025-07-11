@@ -36,3 +36,18 @@
 .modal-footer {
   display: block;
 }
+
+::ng-deep .mat-form-field-wrapper {
+  padding: 0 !important;
+}
+::ng-deep .mat-form-field-infix {
+  padding-top: 0.45rem !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+  border-radius: 6px;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+  transition: box-shadow ease-in-out 150ms;
+}

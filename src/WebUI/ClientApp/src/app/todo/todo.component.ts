@@ -5,8 +5,14 @@ import {
   TodoListsClient, TodoItemsClient,
   TodoListDto, TodoItemDto, PriorityLevelDto,
   CreateTodoListCommand, UpdateTodoListCommand,
-  CreateTodoItemCommand, UpdateTodoItemDetailCommand
+  CreateTodoItemCommand, UpdateTodoItemDetailCommand, TodoTagDto
 } from '../web-api-client';
+import { MatChipInputEvent } from '@angular/material/chips';
+import { ENTER, COMMA } from '@angular/cdk/keycodes';
+import { FormControl } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { startWith, map } from 'rxjs/operators';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 
 @Component({
   selector: 'app-todo-component',
@@ -19,8 +25,12 @@ export class TodoComponent implements OnInit {
   deleteCountDown = 0;
   deleteCountDownInterval: any;
   lists: TodoListDto[];
+  tags: TodoTagDto[];
   priorityLevels: PriorityLevelDto[];
+  separatorKeysCodes: number[] = [ENTER, COMMA];
+  selectedFilterTag: TodoTagDto;
   selectedList: TodoListDto;
+  selectedTags: TodoTagDto[];
   selectedItem: TodoItemDto;
   newListEditor: any = {};
   listOptionsEditor: any = {};
@@ -35,25 +45,121 @@ export class TodoComponent implements OnInit {
     note: ['']
   });
 
+  // Tag autocomplete properties
+  tagCtrl = new FormControl();
+  filteredTags: Observable<TodoTagDto[]>;
+  availableTags: TodoTagDto[] = [];
 
   constructor(
     private listsClient: TodoListsClient,
     private itemsClient: TodoItemsClient,
     private modalService: BsModalService,
     private fb: FormBuilder
-  ) { }
+  ) {
+    this.filteredTags = this.tagCtrl.valueChanges.pipe(
+      startWith(null),
+      map((tag: string | null) => tag ? this._filterTags(tag) : this.availableTags.slice())
+    );
+  }
 
   ngOnInit(): void {
-    this.listsClient.get().subscribe(
-      result => {
-        this.lists = result.lists;
-        this.priorityLevels = result.priorityLevels;
-        if (this.lists.length) {
-          this.selectedList = this.lists[0];
-        }
-      },
-      error => console.error(error)
+    this.listsClient.get().subscribe(result => {
+      this.lists = result.lists;
+      this.priorityLevels = result.priorityLevels;
+      this.tags = result.tags;
+
+      // Initialize available tags for autocomplete
+      this.availableTags = [...this.tags];
+
+      console.log(this.availableTags);
+      if (this.lists.length) {
+        this.selectedList = this.lists[0];
+        this.selectedFilterTag = this.tags[0];
+      }
+    });
+  }
+
+  // Filter items through tag
+  selectTag(tag: TodoTagDto): void {
+    this.selectedFilterTag = tag;
+  }
+
+  // Get filtered items based on selected tag
+  getFilteredItems(): TodoItemDto[] {
+    if (!this.selectedList || !this.selectedFilterTag) {
+      return this.selectedList?.items || [];
+    }
+
+    if (this.selectedFilterTag.tag === 'All') {
+      return this.selectedList.items;
+    }
+
+    return this.selectedList.items.filter(item =>
+      item.tags && item.tags.some(tag => tag.tag === this.selectedFilterTag.tag)
     );
+  }
+
+  // Tag management methods
+  private _filterTags(value: string): TodoTagDto[] {
+    const filterValue = value.toLowerCase();
+    return this.availableTags.filter(tag =>
+      tag.tag.toLowerCase().includes(filterValue) &&
+      !this.selectedTags.some(selectedTag => selectedTag.tag === tag.tag)
+    );
+  }
+
+  addTag(event: MatChipInputEvent): void {
+    const input = event.input;
+    const value = event.value;
+
+    // Add tag
+    if ((value || '').trim()) {
+      const tagName = value.trim();
+
+      // Check if tag already exists in available tags
+      let existingTag = this.availableTags.find(t => t.tag.toLowerCase() === tagName.toLowerCase());
+
+      if (!existingTag) {
+        // Create new tag using the proper class
+        existingTag = new TodoTagDto();
+        existingTag.id = 0; // Temporary ID for new tags
+        existingTag.tag = tagName;
+        this.availableTags.push(existingTag);
+      }
+
+      // Add to selected tags if not already selected
+      if (!this.selectedTags.some(t => t.tag === existingTag.tag)) {
+        this.selectedTags.push(existingTag);
+      }
+    }
+
+    // Reset the input value
+    if (input) {
+      input.value = '';
+    }
+
+    this.tagCtrl.setValue(null);
+  }
+
+  removeTag(tag: TodoTagDto): void {
+    const index = this.selectedTags.indexOf(tag);
+    if (index >= 0) {
+      this.selectedTags.splice(index, 1);
+    }
+  }
+
+  selectedTag(event: MatAutocompleteSelectedEvent): void {
+    const selectedTag = this.availableTags.find(t => t.tag === event.option.viewValue);
+    if (selectedTag && !this.selectedTags.some(t => t.tag === selectedTag.tag)) {
+      this.selectedTags.push(selectedTag);
+    }
+
+    // Clear the input
+    const input = event.option.value;
+    if (input) {
+      input.value = '';
+    }
+    this.tagCtrl.setValue(null);
   }
 
   // Lists

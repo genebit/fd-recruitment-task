@@ -519,6 +519,12 @@
               "$ref": "#/components/schemas/PriorityLevelDto"
             }
           },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TodoTagDto"
+            }
+          },
           "lists": {
             "type": "array",
             "items": {
@@ -538,6 +544,19 @@
           "name": {
             "type": "string",
             "nullable": true
+          }
+        }
+      },
+      "TodoTagDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tag": {
+            "type": "string"
           }
         }
       },
@@ -591,6 +610,12 @@
           "note": {
             "type": "string",
             "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TodoTagDto"
+            }
           }
         }
       },

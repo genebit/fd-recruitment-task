@@ -11,13 +11,13 @@
       <div class="clearfix">
         <h2 class="float-start">Lists</h2>
         <button class="btn btn-default float-end" title="New List..."
-          (click)="showNewListModal(newListModalTemplate)">
+                (click)="showNewListModal(newListModalTemplate)">
           <i class="bi bi-journal-plus"></i>
         </button>
       </div>
       <ul class="list-group">
         <li *ngFor="let list of lists; index as i" class="list-group-item"
-          [ngClass]="{ 'active': selectedList == list }" (click)="selectedList = list">
+            [ngClass]="{ 'active': selectedList == list }" (click)="selectedList = list">
           <div class="clearfix">
             <div class="float-start">
               {{ list.title }}
@@ -33,10 +33,15 @@
       <div class="clearfix">
         <h2 class="float-start">{{ selectedList.title }}</h2>
         <button id="listOptions" class="btn btn-default float-end" title="List Options..."
-          (click)="showListOptionsModal(listOptionsModalTemplate)">
+                (click)="showListOptionsModal(listOptionsModalTemplate)">
           <i class="bi bi-three-dots-vertical"></i>
         </button>
       </div>
+      <ul class="nav nav-pills mb-2 tw-flex tw-gap-1 tw-rounded-lg tw-bg-blue-50 tw-p-1.5">
+        <li class="nav-item" *ngFor="let tag of tags">
+          <a class="nav-link" [ngClass]="{ 'active': selectedFilterTag.tag === tag.tag }" role="button" (click)="selectTag(tag)">{{ tag.tag }}</a>
+        </li>
+      </ul>
       <ul id="todo-items" class="list-group mb-2">
         <li class="list-group-item" *ngFor="let item of selectedList.items; index as i">
           <div class="d-flex">
@@ -45,16 +50,16 @@
             </div>
             <div class="flex-fill">
               <input id="{{ 'itemTitle' + i }}" *ngIf="item == selectedItem" type="text"
-                class="form-control item-input-control" [(ngModel)]="item.title" (keyup.enter)="updateItem(item, true)"
-                (blur)="updateItem(item)" autofocus="autofocus" />
+                     class="form-control item-input-control" [(ngModel)]="item.title" (keyup.enter)="updateItem(item, true)"
+                     (blur)="updateItem(item)" autofocus="autofocus" />
               <div class="todo-item-title" *ngIf="item != selectedItem" [ngClass]="{ 'done-todo': item.done }"
-                (click)="editItem(item, 'itemTitle' + i)" class="form-control item-input-control">
+                   (click)="editItem(item, 'itemTitle' + i)" class="form-control item-input-control">
                 <span>{{ item.title }}</span>
               </div>
             </div>
             <div class="todo-item-commands">
               <button *ngIf="item.id != 0" (click)="showItemDetailsModal(itemDetailsModalTemplate, item)"
-                class="btn btn-default btn-xs" role="button">
+                      class="btn btn-default btn-xs" role="button">
                 <i class="bi bi-three-dots-vertical"></i>
               </button>
             </div>
@@ -83,7 +88,7 @@
     <div class="form-group">
       <label for="inputListTitle">Title</label>
       <input type="text" class="form-control" id="inputListTitle" placeholder="List name..."
-        [(ngModel)]="listOptionsEditor.title" (keyup.enter)="updateListOptions()" />
+             [(ngModel)]="listOptionsEditor.title" (keyup.enter)="updateListOptions()" />
     </div>
     <div *ngIf="debug">
       <pre>{{ listOptionsEditor | json }}</pre>
@@ -113,15 +118,49 @@
     <form [formGroup]="itemDetailsFormGroup" class="form">
       <div class="form-group">
         <label for="list">List</label>
-        <select class="form-control" formControlName="listId">
+        <select class="form-select" formControlName="listId">
           <option [ngValue]="list.id" *ngFor="let list of lists">{{ list.title }}</option>
         </select>
       </div>
       <div class="form-group">
         <label for="priority">Priority</label>
-        <select class="form-control" formControlName="priority">
+        <select class="form-select" formControlName="priority">
           <option [ngValue]="level.value" *ngFor="let level of priorityLevels">{{ level.name }}</option>
         </select>
+      </div>
+      <div class="form-group mt-2 tw-flex tw-flex-col">
+        <label for="tags">Tag(s)</label>
+        <mat-form-field class="example-chip-list tw-w-full tw-p-0" appearance="outline">
+          <mat-chip-list #chipList>
+            <mat-chip [removable]="true">
+              Item 1
+              <mat-icon matChipRemove>
+                <i class="bi bi-x-circle-fill"></i>
+              </mat-icon>
+            </mat-chip>
+            <mat-chip [removable]="true">
+              Item 2
+              <mat-icon matChipRemove>
+                <i class="bi bi-x-circle-fill"></i>
+              </mat-icon>
+            </mat-chip>
+            <mat-chip [removable]="true">
+              Item 3
+              <mat-icon matChipRemove>
+                <i class="bi bi-x-circle-fill"></i>
+              </mat-icon>
+            </mat-chip>
+            <input placeholder="Add Tag"
+                   matInput
+                   [matChipInputFor]="chipList"
+                   [matAutocomplete]="auto" />
+          </mat-chip-list>
+          <mat-autocomplete #auto="matAutocomplete">
+            <mat-option>Suggest 1</mat-option>
+            <mat-option>Suggest 2</mat-option>
+            <mat-option>Suggest 3</mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
       </div>
       <div class="form-group">
         <label for="note">Note</label>
@@ -177,7 +216,7 @@
     <div class="form-group">
       <label for="title">Title</label>
       <input type="text" class="form-control" id="title" placeholder="List title..." [(ngModel)]="newListEditor.title"
-        [ngClass]="{ 'is-invalid': newListEditor.error }" (keyup.enter)="addList()" />
+             [ngClass]="{ 'is-invalid': newListEditor.error }" (keyup.enter)="addList()" />
       <div *ngIf="newListEditor.error" class="invalid-feedback">
         {{ newListEditor.error }}
       </div>
