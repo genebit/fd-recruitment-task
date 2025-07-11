@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Todo_App.Application.Common.Interfaces;
+using Todo_App.Domain.Entities;
 using Todo_App.Domain.Enums;
 
 namespace Todo_App.Application.TodoLists.Queries.GetTodos;
@@ -28,6 +29,12 @@ public class GetTodosQueryHandler : IRequestHandler<GetTodosQuery, TodosVm>
                 .Cast<PriorityLevel>()
                 .Select(p => new PriorityLevelDto { Value = (int)p, Name = p.ToString() })
                 .ToList(),
+
+            Tags = await _context.TodoTags
+                .AsNoTracking()
+                .ProjectTo<TodoTagDto>(_mapper.ConfigurationProvider)
+                .OrderBy(t => t.Tag)
+                .ToListAsync(cancellationToken),
 
             Lists = await _context.TodoLists
                 .AsNoTracking()
