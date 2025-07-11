@@ -1,11 +1,11 @@
 ﻿namespace Todo_App.Domain.Events;
 
-public class TodoItemCreatedEvent : BaseEvent
+public class TodoTagCreatedEvent : BaseEvent
 {
-    public TodoItemCreatedEvent(TodoItem item)
+    public TodoTagCreatedEvent(TodoTag item)
     {
         Item = item;
     }
 
-    public TodoItem Item { get; }
+    public TodoTag Item { get; }
 }
