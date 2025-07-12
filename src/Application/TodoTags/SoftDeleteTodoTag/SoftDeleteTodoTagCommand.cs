@@ -4,7 +4,7 @@ using Todo_App.Application.Common.Interfaces;
 using Todo_App.Domain.Entities;
 using Todo_App.Domain.Events;
 
-namespace Todo_App.Application.TodoTags.Commands.SoftDeleteTodoTag;
+namespace Todo_App.Application.TodoTags.SoftDeleteTodoTag;
 
 public record SoftDeleteTodoTagCommand(int Id) : IRequest;
 

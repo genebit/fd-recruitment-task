@@ -3,7 +3,7 @@ using Todo_App.Application.Common.Interfaces;
 using Todo_App.Domain.Entities;
 using Todo_App.Domain.Events;
 
-namespace Todo_App.Application.TodoItems.Commands.CreateTodoTag;
+namespace Todo_App.Application.TodoTags.CreateTodoTag;
 
 public record CreateTodoTagCommand : IRequest<int>
 {
