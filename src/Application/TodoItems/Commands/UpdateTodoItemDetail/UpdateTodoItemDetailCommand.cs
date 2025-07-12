@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Todo_App.Application.Common.Exceptions;
 using Todo_App.Application.Common.Interfaces;
 using Todo_App.Domain.Entities;
@@ -15,6 +16,8 @@ public record UpdateTodoItemDetailCommand : IRequest
     public PriorityLevel Priority { get; init; }
 
     public string? Note { get; init; }
+
+    public IList<TodoTag>? Tags { get; init; }
 }
 
 public class UpdateTodoItemDetailCommandHandler : IRequestHandler<UpdateTodoItemDetailCommand>
@@ -29,7 +32,8 @@ public class UpdateTodoItemDetailCommandHandler : IRequestHandler<UpdateTodoItem
     public async Task<Unit> Handle(UpdateTodoItemDetailCommand request, CancellationToken cancellationToken)
     {
         var entity = await _context.TodoItems
-            .FindAsync(new object[] { request.Id }, cancellationToken);
+            .Include(t => t.TodoItemTags)
+            .FirstOrDefaultAsync(t => t.Id == request.Id, cancellationToken);
 
         if (entity == null)
         {
@@ -39,6 +43,22 @@ public class UpdateTodoItemDetailCommandHandler : IRequestHandler<UpdateTodoItem
         entity.ListId = request.ListId;
         entity.Priority = request.Priority;
         entity.Note = request.Note;
+
+        // Clear existing tags
+        entity.TodoItemTags.Clear();
+
+        // Reassign tags if provided
+        if (request.Tags != null && request.Tags.Any())
+        {
+            foreach (var tag in request.Tags)
+            {
+                entity.TodoItemTags.Add(new TodoItemTag
+                {
+                    ItemId = entity.Id,
+                    TagId = tag.Id
+                });
+            }
+        }
 
         await _context.SaveChangesAsync(cancellationToken);
 

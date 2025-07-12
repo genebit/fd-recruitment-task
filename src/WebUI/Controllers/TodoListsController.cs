@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Todo_App.Application.TodoLists.Commands.CreateTodoList;
-using Todo_App.Application.TodoLists.Commands.DeleteTodoList;
 using Todo_App.Application.TodoLists.Commands.SoftDeleteTodoList;
 using Todo_App.Application.TodoLists.Commands.UpdateTodoList;
 using Todo_App.Application.TodoLists.Queries.ExportTodos;

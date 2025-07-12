@@ -3,16 +3,20 @@ import { FormBuilder } from '@angular/forms';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import {
   TodoListsClient, TodoItemsClient,
-  TodoListDto, TodoItemDto, PriorityLevelDto,
+  TodoListDto, TodoItemDto, PriorityLevelDto, TodoTagDto,
   CreateTodoListCommand, UpdateTodoListCommand,
-  CreateTodoItemCommand, UpdateTodoItemDetailCommand
+  CreateTodoItemCommand, UpdateTodoItemDetailCommand,
+  CreateTodoTagCommand,
+  TodoTagsClient
 } from '../web-api-client';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-todo-component',
   templateUrl: './todo.component.html',
   styleUrls: ['./todo.component.scss']
 })
+
 export class TodoComponent implements OnInit {
   debug = false;
   deleting = false;
@@ -32,7 +36,8 @@ export class TodoComponent implements OnInit {
     id: [null],
     listId: [null],
     priority: [''],
-    note: ['']
+    note: [''],
+    tags: [[]]
   });
   supportedColours = [
     { name: 'White', code: '#FFFFFF' },
@@ -45,24 +50,95 @@ export class TodoComponent implements OnInit {
     { name: 'Grey', code: '#999999' },
   ];
 
+  // Tag properties
+  tagCtrl = new FormControl();
+  tags: TodoTagDto[];
+  selectedFilterTag: TodoTagDto;
+
   constructor(
     private listsClient: TodoListsClient,
     private itemsClient: TodoItemsClient,
+    private tagsClient: TodoTagsClient,
     private modalService: BsModalService,
     private fb: FormBuilder
-  ) { }
+  ) {
+  }
 
   ngOnInit(): void {
+    this.loadTodos();
+  }
+
+  loadTodos(): void {
     this.listsClient.get().subscribe(
       result => {
         this.lists = result.lists;
         this.priorityLevels = result.priorityLevels;
+        this.tags = result.tags;
+
         if (this.lists.length) {
           this.selectedList = this.lists[0];
         }
       },
-      error => console.error(error)
+      error => {
+        console.error('Error loading todos:', error);
+        alert('Failed to load todos.');
+      }
     );
+  }
+
+  addTag() {
+    const newTagName = prompt('Enter new tag name:');
+    if (newTagName && newTagName.trim()) {
+      // Check if tag already exists
+      const exists = this.tags.some(tag =>
+        tag.tag.toLowerCase() === newTagName.trim().toLowerCase()
+      );
+
+      const tag = { id: null, tag: newTagName.trim() } as TodoTagDto;
+
+      if (!exists) {
+        // Add new tag to the array
+        this.tagsClient.create(tag as CreateTodoTagCommand).subscribe(
+          result => {
+            tag.id = result;
+            this.tags.push(tag);
+          },
+          error => {
+            const errors = JSON.parse(error.response);
+
+            if (errors && errors.Tag) {
+              this.listOptionsEditor.error = errors.Tag[0];
+            }
+          }
+        );
+      } else {
+        alert('Tag already exists!');
+      }
+    }
+  }
+
+  deleteTag(id: number) {
+    // Add new tag to the array
+    this.tagsClient.delete(id).subscribe(
+      result => {
+        this.tags = this.tags.filter(tag => tag.id !== id);
+      },
+      error => {
+        alert('Failed to delete tag.');
+      }
+    );
+  }
+
+  onSelectionTagChange(event: any) {
+    const selectedTags = this.tags.filter(tag => event.value.includes(tag.id));
+    this.itemDetailsFormGroup.get('tags')?.setValue(selectedTags);
+  }
+
+  // Filter items through tag
+  selectTag(tag: TodoTagDto): void {
+    this.selectedFilterTag = (this.selectedFilterTag && tag.tag === this.selectedFilterTag.tag)
+      ? null
+      : tag;
   }
 
   // Lists
@@ -156,35 +232,45 @@ export class TodoComponent implements OnInit {
   // Items
   showItemDetailsModal(template: TemplateRef<any>, item: TodoItemDto): void {
     this.selectedItem = item;
-    this.itemDetailsFormGroup.patchValue(this.selectedItem);
+    const selectedTagIds = item.tags?.map(tag => tag.id) || [];
+
+    // Update form group
+    this.itemDetailsFormGroup.patchValue({
+      ...item,
+      tags: this.tags.filter(tag => selectedTagIds.includes(tag.id)) // populate tag objects in form
+    });
+
+    this.tagCtrl.setValue([...selectedTagIds]);
 
     this.itemDetailsModalRef = this.modalService.show(template);
     this.itemDetailsModalRef.onHidden.subscribe(() => {
-        this.stopDeleteCountDown();
+      this.stopDeleteCountDown();
     });
   }
 
   updateItemDetails(): void {
-    const item = new UpdateTodoItemDetailCommand(this.itemDetailsFormGroup.value);
+    const item = this.itemDetailsFormGroup.value as UpdateTodoItemDetailCommand;
+
     this.itemsClient.updateItemDetails(this.selectedItem.id, item).subscribe(
       () => {
+        this.selectedItem.priority = item.priority;
+        this.selectedItem.note = item.note;
+        this.selectedItem.listId = item.listId;
+        this.selectedItem.tags = item.tags;
+
+        // If list changed, move the item
         if (this.selectedItem.listId !== item.listId) {
           this.selectedList.items = this.selectedList.items.filter(
             i => i.id !== this.selectedItem.id
           );
-          const listIndex = this.lists.findIndex(
-            l => l.id === item.listId
-          );
-          this.selectedItem.listId = item.listId;
+          const listIndex = this.lists.findIndex(l => l.id === item.listId);
           this.lists[listIndex].items.push(this.selectedItem);
         }
 
-        this.selectedItem.priority = item.priority;
-        this.selectedItem.note = item.note;
         this.itemDetailsModalRef.hide();
         this.itemDetailsFormGroup.reset();
       },
-      error => console.error(error)
+      error => alert(error)
     );
   }
 

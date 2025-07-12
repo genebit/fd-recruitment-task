@@ -2,8 +2,6 @@
 
 public class TodoItem : BaseAuditableEntity
 {
-    public int ListId { get; set; }
-
     public string? Title { get; set; }
 
     public string? Note { get; set; }
@@ -27,5 +25,9 @@ public class TodoItem : BaseAuditableEntity
         }
     }
 
+    public int ListId { get; set; }
+
     public TodoList List { get; set; } = null!;
+
+    public IList<TodoItemTag> TodoItemTags { get; set; } = new List<TodoItemTag>();
 }

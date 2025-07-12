@@ -29,10 +29,16 @@ public class GetTodosQueryHandler : IRequestHandler<GetTodosQuery, TodosVm>
                 .Select(p => new PriorityLevelDto { Value = (int)p, Name = p.ToString() })
                 .ToList(),
 
+            Tags = await _context.TodoTags
+                .AsNoTracking()
+                .ProjectTo<TodoTagDto>(_mapper.ConfigurationProvider)
+                .OrderBy(t => t.Tag)
+                .ToListAsync(cancellationToken),
+
             Lists = await _context.TodoLists
                 .AsNoTracking()
+                .OrderBy(l => l.Title)
                 .ProjectTo<TodoListDto>(_mapper.ConfigurationProvider)
-                .OrderBy(t => t.Title)
                 .ToListAsync(cancellationToken)
         };
     }

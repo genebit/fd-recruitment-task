@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Reflection.Emit;
 using Duende.IdentityServer.EntityFramework.Options;
 using MediatR;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
@@ -31,12 +32,30 @@ public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>, 
 
     public DbSet<TodoItem> TodoItems => Set<TodoItem>();
 
+    public DbSet<TodoTag> TodoTags => Set<TodoTag>();
+
+    public DbSet<TodoItemTag> TodoItemTags => Set<TodoItemTag>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
         builder.Entity<TodoList>().HasQueryFilter(e => !e.IsDeleted);
         builder.Entity<TodoItem>().HasQueryFilter(e => !e.IsDeleted);
+        builder.Entity<TodoTag>().HasQueryFilter(e => !e.IsDeleted);
+
+        builder.Entity<TodoItemTag>()
+            .HasKey(x => new { x.ItemId, x.TagId });
+
+        builder.Entity<TodoItemTag>()
+            .HasOne(x => x.Item)
+            .WithMany(i => i.TodoItemTags)
+            .HasForeignKey(x => x.ItemId);
+
+        builder.Entity<TodoItemTag>()
+            .HasOne(x => x.Tag)
+            .WithMany(t => t.TodoItemTags)
+            .HasForeignKey(x => x.TagId);
 
         base.OnModelCreating(builder);
     }

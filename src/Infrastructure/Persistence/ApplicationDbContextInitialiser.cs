@@ -87,5 +87,15 @@ public class ApplicationDbContextInitialiser
 
             await _context.SaveChangesAsync();
         }
+
+        if (!_context.TodoTags.Any())
+        {
+            _context.TodoTags.Add(new TodoTag { Tag = "Scratchpad" });
+            _context.TodoTags.Add(new TodoTag { Tag = "Finance" });
+            _context.TodoTags.Add(new TodoTag { Tag = "Work" });
+            _context.TodoTags.Add(new TodoTag { Tag = "School" });
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

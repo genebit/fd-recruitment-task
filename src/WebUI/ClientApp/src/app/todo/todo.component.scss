@@ -36,3 +36,23 @@
 .modal-footer {
   display: block;
 }
+
+::ng-deep .modal.show {
+  z-index: 1000 !important;
+}
+
+::ng-deep .modal-backdrop.show {
+  z-index: 999 !important;
+}
+
+::ng-deep .cdk-overlay-container {
+  z-index: 1050 !important;
+}
+
+::ng-deep .mat-form-field-flex {
+  padding: 0 !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
+  padding: 0.5rem 0.75rem !important;
+}
