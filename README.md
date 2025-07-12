@@ -25,3 +25,20 @@ Our test task is based on the Clean Architecture Solution Template that uses .NE
 - Deleted items should not be shown on the UI or included in any query
 
 **Include as much unit test coverage as possible for the code you add.**
+
+## How to run the Aplication
+
+The application can be run in Visual Studio with .NET 6 as the minimum runtime requirement.
+
+1. Load the `.sln` file under working directory.
+2. Set `src/WebUI` as the startup application.
+3. Restore packages.
+4. Run migration. e.g., using
+```bash
+dotnet ef database update --project src/Infrastructure --startup-project src/WebUI
+```
+5. Run the application.
+
+## Testing
+
+Run `dotnet test` under the working directory to view integration and unit tests.
