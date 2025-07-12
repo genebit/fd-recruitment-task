@@ -35,6 +35,9 @@ public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>, 
     {
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
+        builder.Entity<TodoList>().HasQueryFilter(e => !e.IsDeleted);
+        builder.Entity<TodoItem>().HasQueryFilter(e => !e.IsDeleted);
+
         base.OnModelCreating(builder);
     }
 
