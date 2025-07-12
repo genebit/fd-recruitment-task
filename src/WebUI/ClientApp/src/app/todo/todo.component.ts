@@ -34,7 +34,16 @@ export class TodoComponent implements OnInit {
     priority: [''],
     note: ['']
   });
-
+  supportedColours = [
+    { name: 'White', code: '#FFFFFF' },
+    { name: 'Red', code: '#FF5733' },
+    { name: 'Orange', code: '#FFC300' },
+    { name: 'Yellow', code: '#FFFF66' },
+    { name: 'Green', code: '#CCFF99' },
+    { name: 'Blue', code: '#6666FF' },
+    { name: 'Purple', code: '#9966CC' },
+    { name: 'Grey', code: '#999999' },
+  ];
 
   constructor(
     private listsClient: TodoListsClient,
@@ -63,7 +72,11 @@ export class TodoComponent implements OnInit {
 
   showNewListModal(template: TemplateRef<any>): void {
     this.newListModalRef = this.modalService.show(template);
-    setTimeout(() => document.getElementById('title').focus(), 250);
+    this.newListEditor = {
+      colour: this.supportedColours[0].code
+    };
+
+    setTimeout(() => document.getElementById('title')?.focus(), 250);
   }
 
   newListCancelled(): void {
@@ -75,7 +88,8 @@ export class TodoComponent implements OnInit {
     const list = {
       id: 0,
       title: this.newListEditor.title,
-      items: []
+      colour: this.newListEditor.colour || this.supportedColours[0].code,
+      items: [],
     } as TodoListDto;
 
     this.listsClient.create(list as CreateTodoListCommand).subscribe(
@@ -101,7 +115,8 @@ export class TodoComponent implements OnInit {
   showListOptionsModal(template: TemplateRef<any>) {
     this.listOptionsEditor = {
       id: this.selectedList.id,
-      title: this.selectedList.title
+      title: this.selectedList.title,
+      colour: this.selectedList.colour || this.supportedColours[0].code
     };
 
     this.listOptionsModalRef = this.modalService.show(template);
@@ -109,10 +124,13 @@ export class TodoComponent implements OnInit {
 
   updateListOptions() {
     const list = this.listOptionsEditor as UpdateTodoListCommand;
+
     this.listsClient.update(this.selectedList.id, list).subscribe(
       () => {
-        (this.selectedList.title = this.listOptionsEditor.title),
-          this.listOptionsModalRef.hide();
+        this.selectedList.title = this.listOptionsEditor.title;
+        this.selectedList.colour = this.listOptionsEditor.colour;
+
+        this.listOptionsModalRef.hide();
         this.listOptionsEditor = {};
       },
       error => console.error(error)
@@ -260,5 +278,11 @@ export class TodoComponent implements OnInit {
     clearInterval(this.deleteCountDownInterval);
     this.deleteCountDown = 0;
     this.deleting = false;
+  }
+
+  isLightBackground(colour) {
+    // White and Yellow
+    const lightColours = [this.supportedColours[0].code, this.supportedColours[3].code];
+    return lightColours.includes(colour?.toUpperCase());
   }
 }
