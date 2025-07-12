@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
 import { ModalModule } from 'ngx-bootstrap/modal';
@@ -18,12 +18,10 @@ import { ApiAuthorizationModule } from 'src/api-authorization/api-authorization.
 import { AuthorizeInterceptor } from 'src/api-authorization/authorize.interceptor';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
-import { MatOptionModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDividerModule } from '@angular/material/divider';
 
 @NgModule({
   declarations: [
@@ -43,12 +41,12 @@ import { MatOptionModule } from '@angular/material/core';
     ApiAuthorizationModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    MatAutocompleteModule,
     MatFormFieldModule,
-    MatInputModule,
-    MatChipsModule,
+    MatSelectModule,
     MatIconModule,
-    MatOptionModule,
+    MatDividerModule,
+    FormsModule,
+    ReactiveFormsModule,
     ModalModule.forRoot()
   ],
   providers: [
