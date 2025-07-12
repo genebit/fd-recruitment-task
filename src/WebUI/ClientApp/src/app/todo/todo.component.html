@@ -1,4 +1,4 @@
-﻿<h1>Todo</h1>
+<h1>Todo</h1>
 
 <p>This is a complex todo list component.</p>
 
@@ -109,6 +109,8 @@
                  [(ngModel)]="listOptionsEditor.title" (keyup.enter)="updateListOptions()" />
         </div>
       </div>
+    </div>
+    <div class="row">
       <div class="col-md-12 mb-2">
         <div class="form-group mt-2">
           <label for="listColor">Accent Color</label>
@@ -120,10 +122,6 @@
           </select>
         </div>
       </div>
-    <div class="form-group">
-      <label for="inputListTitle">Title</label>
-      <input type="text" class="form-control" id="inputListTitle" placeholder="List name..."
-             [(ngModel)]="listOptionsEditor.title" (keyup.enter)="updateListOptions()" />
     </div>
     <div *ngIf="debug">
       <pre>{{ listOptionsEditor | json }}</pre>
@@ -244,6 +242,8 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="row">
       <div class="col-md-12 mb-2">
         <div class="form-group mt-2">
           <label for="newListColor">Accent Color</label>
@@ -255,21 +255,15 @@
             </option>
           </select>
         </div>
-    <div class="form-group">
-      <label for="title">Title</label>
-      <input type="text" class="form-control" id="title" placeholder="List title..." [(ngModel)]="newListEditor.title"
-             [ngClass]="{ 'is-invalid': newListEditor.error }" (keyup.enter)="addList()" />
-      <div *ngIf="newListEditor.error" class="invalid-feedback">
-        {{ newListEditor.error }}
-      </div>
-    </div>
-    <div *ngIf="debug">
-      <pre>{{ newListEditor | json }}</pre>
-    </div>
-    <div class="modal-footer clearfix">
-      <div class="float-end">
-        <button class="btn btn-default" (click)="newListCancelled()">Cancel</button>
-        <button class="btn btn-primary" (click)="addList()">Create</button>
+        <div *ngIf="debug">
+          <pre>{{ newListEditor | json }}</pre>
+        </div>
+        <div class="modal-footer clearfix">
+          <div class="float-end">
+            <button class="btn btn-default" (click)="newListCancelled()">Cancel</button>
+            <button class="btn btn-primary" (click)="addList()">Create</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

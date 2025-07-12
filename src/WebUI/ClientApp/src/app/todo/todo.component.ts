@@ -360,13 +360,13 @@ export class TodoComponent implements OnInit {
     }
   }
 
-  stopDeleteCountDown() {
+  stopDeleteCountDown(): void {
     clearInterval(this.deleteCountDownInterval);
     this.deleteCountDown = 0;
     this.deleting = false;
   }
 
-  isLightBackground(colour) {
+  isLightBackground(colour: string): boolean {
     // White and Yellow
     const lightColours = [this.supportedColours[0].code, this.supportedColours[3].code];
     return lightColours.includes(colour?.toUpperCase());
