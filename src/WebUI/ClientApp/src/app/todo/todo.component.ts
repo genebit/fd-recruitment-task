@@ -19,6 +19,7 @@ import { FormControl } from '@angular/forms';
 
 export class TodoComponent implements OnInit {
   debug = false;
+  searchTerm: string = '';
   deleting = false;
   deleteCountDown = 0;
   deleteCountDownInterval: any;
@@ -370,5 +371,16 @@ export class TodoComponent implements OnInit {
     // White and Yellow
     const lightColours = [this.supportedColours[0].code, this.supportedColours[3].code];
     return lightColours.includes(colour?.toUpperCase());
+  }
+
+  get filteredItems(): TodoItemDto[] {
+    if (!this.selectedList) return [];
+
+    const term = this.searchTerm.toLowerCase().trim();
+
+    return this.selectedList.items.filter(item =>
+      item.title?.toLowerCase().includes(term) ||
+      item.note?.toLowerCase().includes(term)
+    );
   }
 }

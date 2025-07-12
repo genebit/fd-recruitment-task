@@ -28,7 +28,7 @@
               </button>
               {{ list.title }}
             </div>
-            <div class="float-end text-right" *ngIf="selectedList == list">
+            <div class="text-right float-end" *ngIf="selectedList == list">
               <span class="badge badge-light" [ngClass]="{ 'text-dark': isLightBackground(list.colour) }">
                 {{ remainingItems(list) }}
               </span>
@@ -53,8 +53,15 @@
           </a>
         </li>
       </ul>
-      <ul id="todo-items" class="list-group mb-2">
-        <li class="list-group-item" *ngFor="let item of selectedList.items; index as i">
+      <div class="mb-3 form-group">
+        <input type="search"
+               name="name"
+               class="form-control"
+               [(ngModel)]="searchTerm"
+               placeholder="Search items..." />
+      </div>
+      <ul id="todo-items" class="mb-2 list-group">
+        <li class="list-group-item" *ngFor="let item of filteredItems; index as i">
           <div class="d-flex">
             <div class="todo-item-checkbox">
               <input type="checkbox" [(ngModel)]="item.done" (change)="updateItem(item)" />
@@ -102,7 +109,7 @@
   </div>
   <div class="modal-body">
     <div class="row">
-      <div class="col-md-12 mb-2">
+      <div class="mb-2 col-md-12">
         <div class="form-group">
           <label for="inputListTitle">Title</label>
           <input type="text" class="form-control" id="inputListTitle" placeholder="List name..."
@@ -111,8 +118,8 @@
       </div>
     </div>
     <div class="row">
-      <div class="col-md-12 mb-2">
-        <div class="form-group mt-2">
+      <div class="mb-2 col-md-12">
+        <div class="mt-2 form-group">
           <label for="listColor">Accent Color</label>
           <select id="listColor" class="form-select"
                   [(ngModel)]="listOptionsEditor.colour">
@@ -161,7 +168,7 @@
           <option [ngValue]="level.value" *ngFor="let level of priorityLevels">{{ level.name }}</option>
         </select>
       </div>
-      <div class="form-group mt-2 tw-flex tw-flex-col">
+      <div class="mt-2 form-group tw-flex tw-flex-col">
         <label for="tags">Tag(s)</label>
         <mat-form-field appearance="outline">
           <mat-select [formControl]="tagCtrl" multiple class="tw-z-[1000]" (selectionChange)="onSelectionTagChange($event)">
@@ -174,7 +181,7 @@
               </div>
             </mat-option>
             <mat-divider></mat-divider>
-            <button (click)="addTag()" class="btn btn-sm btn-primary m-2">
+            <button (click)="addTag()" class="m-2 btn btn-sm btn-primary">
               Add Tag
             </button>
           </mat-select>
@@ -215,7 +222,7 @@
       <pre>{{ selectedList | json }}</pre>
     </div>
   </div>
-  <div class="modal-footer clearfix">
+  <div class="clearfix modal-footer">
     <div class="float-end">
       <button type="button" class="btn btn-default" (click)="deleteListModalRef.hide()">Cancel</button>
       <button type="button" class="btn btn-danger" (click)="deleteListConfirmed()">Delete</button>
@@ -232,7 +239,7 @@
   </div>
   <div class="modal-body">
     <div class="row">
-      <div class="col-md-12 mb-2">
+      <div class="mb-2 col-md-12">
         <div class="form-group">
           <label for="title">Title</label>
           <input type="text" class="form-control" id="title" placeholder="List title..." [(ngModel)]="newListEditor.title"
@@ -244,8 +251,8 @@
       </div>
     </div>
     <div class="row">
-      <div class="col-md-12 mb-2">
-        <div class="form-group mt-2">
+      <div class="mb-2 col-md-12">
+        <div class="mt-2 form-group">
           <label for="newListColor">Accent Color</label>
           <select id="newListColor" class="form-select"
                   [ngClass]="{ 'is-invalid': newListEditor.error }"
@@ -258,7 +265,7 @@
         <div *ngIf="debug">
           <pre>{{ newListEditor | json }}</pre>
         </div>
-        <div class="modal-footer clearfix">
+        <div class="clearfix modal-footer">
           <div class="float-end">
             <button class="btn btn-default" (click)="newListCancelled()">Cancel</button>
             <button class="btn btn-primary" (click)="addList()">Create</button>
