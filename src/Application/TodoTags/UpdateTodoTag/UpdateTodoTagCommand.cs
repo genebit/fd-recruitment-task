@@ -36,7 +36,7 @@ public class UpdateTodoTagCommandHandler : IRequestHandler<UpdateTodoTagCommand>
             throw new ArgumentException("Tag name cannot be null or empty.", nameof(request.Tag));
         }
 
-        entity.Tag = request.Tag;
+        entity.Tag = request.Tag.Trim();
 
         await _context.SaveChangesAsync(cancellationToken);
 
