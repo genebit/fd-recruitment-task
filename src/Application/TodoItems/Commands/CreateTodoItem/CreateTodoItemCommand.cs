@@ -26,7 +26,7 @@ public class CreateTodoItemCommandHandler : IRequestHandler<CreateTodoItemComman
         var entity = new TodoItem
         {
             ListId = request.ListId,
-            Title = request.Title,
+            Title = request.Title!.Trim(),
             Done = false
         };
 

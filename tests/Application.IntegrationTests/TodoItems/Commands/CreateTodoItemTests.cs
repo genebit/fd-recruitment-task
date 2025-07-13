@@ -21,6 +21,50 @@ public class CreateTodoItemTests : BaseTestFixture
     }
 
     [Test]
+    public async Task ShouldNotAllowDuplicateTodoItemNames()
+    {
+        await RunAsDefaultUserAsync();
+
+        var listId = await SendAsync(new CreateTodoListCommand
+        {
+            Title = "New List"
+        });
+
+        var command1 = new CreateTodoItemCommand { ListId = listId, Title = "Urgent" };
+        var command2 = new CreateTodoItemCommand { ListId = listId, Title = "Urgent" };
+
+        await SendAsync(command1);
+
+        var exception = await FluentActions.Invoking(() =>
+         SendAsync(command2)).Should().ThrowAsync<ValidationException>();
+
+        exception.Which.Errors.Should().ContainKey("Title")
+            .WhoseValue.Should().Contain("The specified title already exists.");
+    }
+
+    [Test]
+    public async Task ShouldTrimWhitespaceFromTodoItemName()
+    {
+        await RunAsDefaultUserAsync();
+
+        var listId = await SendAsync(new CreateTodoListCommand
+        {
+            Title = "New List"
+        });
+
+        var command = new CreateTodoItemCommand
+        {
+            ListId = listId,
+            Title = "  Todo  "
+        };
+
+        var tagId = await SendAsync(command);
+        var item = await FindAsync<TodoItem>(tagId);
+
+        item!.Title.Should().Be("Todo");
+    }
+
+    [Test]
     public async Task ShouldCreateTodoItem()
     {
         var userId = await RunAsDefaultUserAsync();
