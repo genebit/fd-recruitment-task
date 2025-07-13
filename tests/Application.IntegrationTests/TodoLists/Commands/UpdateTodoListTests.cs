@@ -4,6 +4,7 @@ using Todo_App.Application.Common.Exceptions;
 using Todo_App.Application.TodoLists.Commands.CreateTodoList;
 using Todo_App.Application.TodoLists.Commands.UpdateTodoList;
 using Todo_App.Domain.Entities;
+using Todo_App.Domain.ValueObjects;
 
 namespace Todo_App.Application.IntegrationTests.TodoLists.Commands;
 
@@ -56,7 +57,8 @@ public class UpdateTodoListTests : BaseTestFixture
         var command = new UpdateTodoListCommand
         {
             Id = listId,
-            Title = "Updated List Title"
+            Title = "Updated List Title",
+            Colour = Colour.Blue
         };
 
         await SendAsync(command);
@@ -65,6 +67,7 @@ public class UpdateTodoListTests : BaseTestFixture
 
         list.Should().NotBeNull();
         list!.Title.Should().Be(command.Title);
+        list!.Colour.Should().NotBeNull().And.Be(Colour.From(command.Colour));
         list.LastModifiedBy.Should().NotBeNull();
         list.LastModifiedBy.Should().Be(userId);
         list.LastModified.Should().NotBeNull();
