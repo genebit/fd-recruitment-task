@@ -108,6 +108,22 @@ public partial class Testing
         return await context.FindAsync<TEntity>(keyValues);
     }
 
+    public static async Task<TEntity?> FindAsyncIgnoringFilters<TEntity>(params object[] keyValues)
+        where TEntity : class
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        // Get the entity type and key property
+        var entityType = context.Model.FindEntityType(typeof(TEntity));
+        var key = entityType!.FindPrimaryKey();
+        var keyProperty = key!.Properties.First();
+
+        return await context.Set<TEntity>()
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(e => EF.Property<object>(e, keyProperty.Name).Equals(keyValues[0]));
+    }
+
     public static async Task AddAsync<TEntity>(TEntity entity)
         where TEntity : class
     {
