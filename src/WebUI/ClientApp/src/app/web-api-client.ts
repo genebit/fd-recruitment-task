@@ -580,6 +580,181 @@ export class TodoListsClient implements ITodoListsClient {
     }
 }
 
+export interface ITodoTagsClient {
+    create(command: CreateTodoTagCommand): Observable<number>;
+    update(id: number, command: UpdateTodoTagCommand): Observable<FileResponse>;
+    delete(id: number): Observable<FileResponse>;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class TodoTagsClient implements ITodoTagsClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    create(command: CreateTodoTagCommand): Observable<number> {
+        let url_ = this.baseUrl + "/api/TodoTags";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<number>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<number>;
+        }));
+    }
+
+    protected processCreate(response: HttpResponseBase): Observable<number> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    update(id: number, command: UpdateTodoTagCommand): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/TodoTags/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FileResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FileResponse>;
+        }));
+    }
+
+    protected processUpdate(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    delete(id: number): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/TodoTags/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDelete(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDelete(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FileResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FileResponse>;
+        }));
+    }
+
+    protected processDelete(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
 export interface IWeatherForecastClient {
     get(): Observable<WeatherForecast[]>;
 }
@@ -854,6 +1029,7 @@ export class UpdateTodoItemDetailCommand implements IUpdateTodoItemDetailCommand
     listId?: number;
     priority?: PriorityLevel;
     note?: string | undefined;
+    tags?: TodoTag[] | undefined;
 
     constructor(data?: IUpdateTodoItemDetailCommand) {
         if (data) {
@@ -870,6 +1046,11 @@ export class UpdateTodoItemDetailCommand implements IUpdateTodoItemDetailCommand
             this.listId = _data["listId"];
             this.priority = _data["priority"];
             this.note = _data["note"];
+            if (Array.isArray(_data["tags"])) {
+                this.tags = [] as any;
+                for (let item of _data["tags"])
+                    this.tags!.push(TodoTag.fromJS(item));
+            }
         }
     }
 
@@ -886,6 +1067,11 @@ export class UpdateTodoItemDetailCommand implements IUpdateTodoItemDetailCommand
         data["listId"] = this.listId;
         data["priority"] = this.priority;
         data["note"] = this.note;
+        if (Array.isArray(this.tags)) {
+            data["tags"] = [];
+            for (let item of this.tags)
+                data["tags"].push(item.toJSON());
+        }
         return data;
     }
 }
@@ -895,6 +1081,7 @@ export interface IUpdateTodoItemDetailCommand {
     listId?: number;
     priority?: PriorityLevel;
     note?: string | undefined;
+    tags?: TodoTag[] | undefined;
 }
 
 export enum PriorityLevel {
@@ -904,8 +1091,402 @@ export enum PriorityLevel {
     High = 3,
 }
 
+export abstract class BaseEntity implements IBaseEntity {
+    id?: number;
+    domainEvents?: BaseEvent[];
+
+    constructor(data?: IBaseEntity) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            if (Array.isArray(_data["domainEvents"])) {
+                this.domainEvents = [] as any;
+                for (let item of _data["domainEvents"])
+                    this.domainEvents!.push(BaseEvent.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): BaseEntity {
+        data = typeof data === 'object' ? data : {};
+        throw new Error("The abstract class 'BaseEntity' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        if (Array.isArray(this.domainEvents)) {
+            data["domainEvents"] = [];
+            for (let item of this.domainEvents)
+                data["domainEvents"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export interface IBaseEntity {
+    id?: number;
+    domainEvents?: BaseEvent[];
+}
+
+export abstract class BaseAuditableEntity extends BaseEntity implements IBaseAuditableEntity {
+    isDeleted?: boolean;
+    created?: Date;
+    createdBy?: string | undefined;
+    lastModified?: Date | undefined;
+    lastModifiedBy?: string | undefined;
+
+    constructor(data?: IBaseAuditableEntity) {
+        super(data);
+    }
+
+    override init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.isDeleted = _data["isDeleted"];
+            this.created = _data["created"] ? new Date(_data["created"].toString()) : <any>undefined;
+            this.createdBy = _data["createdBy"];
+            this.lastModified = _data["lastModified"] ? new Date(_data["lastModified"].toString()) : <any>undefined;
+            this.lastModifiedBy = _data["lastModifiedBy"];
+        }
+    }
+
+    static override fromJS(data: any): BaseAuditableEntity {
+        data = typeof data === 'object' ? data : {};
+        throw new Error("The abstract class 'BaseAuditableEntity' cannot be instantiated.");
+    }
+
+    override toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["isDeleted"] = this.isDeleted;
+        data["created"] = this.created ? this.created.toISOString() : <any>undefined;
+        data["createdBy"] = this.createdBy;
+        data["lastModified"] = this.lastModified ? this.lastModified.toISOString() : <any>undefined;
+        data["lastModifiedBy"] = this.lastModifiedBy;
+        super.toJSON(data);
+        return data;
+    }
+}
+
+export interface IBaseAuditableEntity extends IBaseEntity {
+    isDeleted?: boolean;
+    created?: Date;
+    createdBy?: string | undefined;
+    lastModified?: Date | undefined;
+    lastModifiedBy?: string | undefined;
+}
+
+export class TodoTag extends BaseAuditableEntity implements ITodoTag {
+    tag?: string;
+    todoItemTags?: TodoItemTag[];
+
+    constructor(data?: ITodoTag) {
+        super(data);
+    }
+
+    override init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.tag = _data["tag"];
+            if (Array.isArray(_data["todoItemTags"])) {
+                this.todoItemTags = [] as any;
+                for (let item of _data["todoItemTags"])
+                    this.todoItemTags!.push(TodoItemTag.fromJS(item));
+            }
+        }
+    }
+
+    static override fromJS(data: any): TodoTag {
+        data = typeof data === 'object' ? data : {};
+        let result = new TodoTag();
+        result.init(data);
+        return result;
+    }
+
+    override toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["tag"] = this.tag;
+        if (Array.isArray(this.todoItemTags)) {
+            data["todoItemTags"] = [];
+            for (let item of this.todoItemTags)
+                data["todoItemTags"].push(item.toJSON());
+        }
+        super.toJSON(data);
+        return data;
+    }
+}
+
+export interface ITodoTag extends IBaseAuditableEntity {
+    tag?: string;
+    todoItemTags?: TodoItemTag[];
+}
+
+export class TodoItemTag implements ITodoItemTag {
+    itemId?: number;
+    item?: TodoItem;
+    tagId?: number;
+    tag?: TodoTag;
+
+    constructor(data?: ITodoItemTag) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.itemId = _data["itemId"];
+            this.item = _data["item"] ? TodoItem.fromJS(_data["item"]) : <any>undefined;
+            this.tagId = _data["tagId"];
+            this.tag = _data["tag"] ? TodoTag.fromJS(_data["tag"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): TodoItemTag {
+        data = typeof data === 'object' ? data : {};
+        let result = new TodoItemTag();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["itemId"] = this.itemId;
+        data["item"] = this.item ? this.item.toJSON() : <any>undefined;
+        data["tagId"] = this.tagId;
+        data["tag"] = this.tag ? this.tag.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface ITodoItemTag {
+    itemId?: number;
+    item?: TodoItem;
+    tagId?: number;
+    tag?: TodoTag;
+}
+
+export class TodoItem extends BaseAuditableEntity implements ITodoItem {
+    title?: string | undefined;
+    note?: string | undefined;
+    priority?: PriorityLevel;
+    reminder?: Date | undefined;
+    done?: boolean;
+    listId?: number;
+    list?: TodoList;
+    todoItemTags?: TodoItemTag[];
+
+    constructor(data?: ITodoItem) {
+        super(data);
+    }
+
+    override init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.title = _data["title"];
+            this.note = _data["note"];
+            this.priority = _data["priority"];
+            this.reminder = _data["reminder"] ? new Date(_data["reminder"].toString()) : <any>undefined;
+            this.done = _data["done"];
+            this.listId = _data["listId"];
+            this.list = _data["list"] ? TodoList.fromJS(_data["list"]) : <any>undefined;
+            if (Array.isArray(_data["todoItemTags"])) {
+                this.todoItemTags = [] as any;
+                for (let item of _data["todoItemTags"])
+                    this.todoItemTags!.push(TodoItemTag.fromJS(item));
+            }
+        }
+    }
+
+    static override fromJS(data: any): TodoItem {
+        data = typeof data === 'object' ? data : {};
+        let result = new TodoItem();
+        result.init(data);
+        return result;
+    }
+
+    override toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["title"] = this.title;
+        data["note"] = this.note;
+        data["priority"] = this.priority;
+        data["reminder"] = this.reminder ? this.reminder.toISOString() : <any>undefined;
+        data["done"] = this.done;
+        data["listId"] = this.listId;
+        data["list"] = this.list ? this.list.toJSON() : <any>undefined;
+        if (Array.isArray(this.todoItemTags)) {
+            data["todoItemTags"] = [];
+            for (let item of this.todoItemTags)
+                data["todoItemTags"].push(item.toJSON());
+        }
+        super.toJSON(data);
+        return data;
+    }
+}
+
+export interface ITodoItem extends IBaseAuditableEntity {
+    title?: string | undefined;
+    note?: string | undefined;
+    priority?: PriorityLevel;
+    reminder?: Date | undefined;
+    done?: boolean;
+    listId?: number;
+    list?: TodoList;
+    todoItemTags?: TodoItemTag[];
+}
+
+export class TodoList extends BaseAuditableEntity implements ITodoList {
+    title?: string | undefined;
+    colour?: Colour;
+    items?: TodoItem[];
+
+    constructor(data?: ITodoList) {
+        super(data);
+    }
+
+    override init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.title = _data["title"];
+            this.colour = _data["colour"] ? Colour.fromJS(_data["colour"]) : <any>undefined;
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items!.push(TodoItem.fromJS(item));
+            }
+        }
+    }
+
+    static override fromJS(data: any): TodoList {
+        data = typeof data === 'object' ? data : {};
+        let result = new TodoList();
+        result.init(data);
+        return result;
+    }
+
+    override toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["title"] = this.title;
+        data["colour"] = this.colour ? this.colour.toJSON() : <any>undefined;
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item.toJSON());
+        }
+        super.toJSON(data);
+        return data;
+    }
+}
+
+export interface ITodoList extends IBaseAuditableEntity {
+    title?: string | undefined;
+    colour?: Colour;
+    items?: TodoItem[];
+}
+
+export abstract class ValueObject implements IValueObject {
+
+    constructor(data?: IValueObject) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+    }
+
+    static fromJS(data: any): ValueObject {
+        data = typeof data === 'object' ? data : {};
+        throw new Error("The abstract class 'ValueObject' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        return data;
+    }
+}
+
+export interface IValueObject {
+}
+
+export class Colour extends ValueObject implements IColour {
+    code?: string;
+
+    constructor(data?: IColour) {
+        super(data);
+    }
+
+    override init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.code = _data["code"];
+        }
+    }
+
+    static override fromJS(data: any): Colour {
+        data = typeof data === 'object' ? data : {};
+        let result = new Colour();
+        result.init(data);
+        return result;
+    }
+
+    override toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["code"] = this.code;
+        super.toJSON(data);
+        return data;
+    }
+}
+
+export interface IColour extends IValueObject {
+    code?: string;
+}
+
+export abstract class BaseEvent implements IBaseEvent {
+
+    constructor(data?: IBaseEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+    }
+
+    static fromJS(data: any): BaseEvent {
+        data = typeof data === 'object' ? data : {};
+        throw new Error("The abstract class 'BaseEvent' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        return data;
+    }
+}
+
+export interface IBaseEvent {
+}
+
 export class TodosVm implements ITodosVm {
     priorityLevels?: PriorityLevelDto[];
+    tags?: TodoTagDto[];
     lists?: TodoListDto[];
 
     constructor(data?: ITodosVm) {
@@ -923,6 +1504,11 @@ export class TodosVm implements ITodosVm {
                 this.priorityLevels = [] as any;
                 for (let item of _data["priorityLevels"])
                     this.priorityLevels!.push(PriorityLevelDto.fromJS(item));
+            }
+            if (Array.isArray(_data["tags"])) {
+                this.tags = [] as any;
+                for (let item of _data["tags"])
+                    this.tags!.push(TodoTagDto.fromJS(item));
             }
             if (Array.isArray(_data["lists"])) {
                 this.lists = [] as any;
@@ -946,6 +1532,11 @@ export class TodosVm implements ITodosVm {
             for (let item of this.priorityLevels)
                 data["priorityLevels"].push(item.toJSON());
         }
+        if (Array.isArray(this.tags)) {
+            data["tags"] = [];
+            for (let item of this.tags)
+                data["tags"].push(item.toJSON());
+        }
         if (Array.isArray(this.lists)) {
             data["lists"] = [];
             for (let item of this.lists)
@@ -957,6 +1548,7 @@ export class TodosVm implements ITodosVm {
 
 export interface ITodosVm {
     priorityLevels?: PriorityLevelDto[];
+    tags?: TodoTagDto[];
     lists?: TodoListDto[];
 }
 
@@ -998,6 +1590,46 @@ export class PriorityLevelDto implements IPriorityLevelDto {
 export interface IPriorityLevelDto {
     value?: number;
     name?: string | undefined;
+}
+
+export class TodoTagDto implements ITodoTagDto {
+    id?: number;
+    tag?: string;
+
+    constructor(data?: ITodoTagDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.tag = _data["tag"];
+        }
+    }
+
+    static fromJS(data: any): TodoTagDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new TodoTagDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["tag"] = this.tag;
+        return data;
+    }
+}
+
+export interface ITodoTagDto {
+    id?: number;
+    tag?: string;
 }
 
 export class TodoListDto implements ITodoListDto {
@@ -1063,6 +1695,7 @@ export class TodoItemDto implements ITodoItemDto {
     done?: boolean;
     priority?: number;
     note?: string | undefined;
+    tags?: TodoTagDto[];
 
     constructor(data?: ITodoItemDto) {
         if (data) {
@@ -1081,6 +1714,11 @@ export class TodoItemDto implements ITodoItemDto {
             this.done = _data["done"];
             this.priority = _data["priority"];
             this.note = _data["note"];
+            if (Array.isArray(_data["tags"])) {
+                this.tags = [] as any;
+                for (let item of _data["tags"])
+                    this.tags!.push(TodoTagDto.fromJS(item));
+            }
         }
     }
 
@@ -1099,6 +1737,11 @@ export class TodoItemDto implements ITodoItemDto {
         data["done"] = this.done;
         data["priority"] = this.priority;
         data["note"] = this.note;
+        if (Array.isArray(this.tags)) {
+            data["tags"] = [];
+            for (let item of this.tags)
+                data["tags"].push(item.toJSON());
+        }
         return data;
     }
 }
@@ -1110,6 +1753,7 @@ export interface ITodoItemDto {
     done?: boolean;
     priority?: number;
     note?: string | undefined;
+    tags?: TodoTagDto[];
 }
 
 export class CreateTodoListCommand implements ICreateTodoListCommand {
@@ -1186,6 +1830,82 @@ export class UpdateTodoListCommand implements IUpdateTodoListCommand {
 export interface IUpdateTodoListCommand {
     id?: number;
     title?: string | undefined;
+}
+
+export class CreateTodoTagCommand implements ICreateTodoTagCommand {
+    tag?: string | undefined;
+
+    constructor(data?: ICreateTodoTagCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.tag = _data["tag"];
+        }
+    }
+
+    static fromJS(data: any): CreateTodoTagCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateTodoTagCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["tag"] = this.tag;
+        return data;
+    }
+}
+
+export interface ICreateTodoTagCommand {
+    tag?: string | undefined;
+}
+
+export class UpdateTodoTagCommand implements IUpdateTodoTagCommand {
+    id?: number;
+    tag?: string | undefined;
+
+    constructor(data?: IUpdateTodoTagCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.tag = _data["tag"];
+        }
+    }
+
+    static fromJS(data: any): UpdateTodoTagCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateTodoTagCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["tag"] = this.tag;
+        return data;
+    }
+}
+
+export interface IUpdateTodoTagCommand {
+    id?: number;
+    tag?: string | undefined;
 }
 
 export class WeatherForecast implements IWeatherForecast {

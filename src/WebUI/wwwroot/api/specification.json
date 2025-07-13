@@ -364,6 +364,115 @@
         }
       }
     },
+    "/api/TodoTags": {
+      "post": {
+        "tags": [
+          "TodoTags"
+        ],
+        "operationId": "TodoTags_Create",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTodoTagCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TodoTags/{id}": {
+      "put": {
+        "tags": [
+          "TodoTags"
+        ],
+        "operationId": "TodoTags_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTodoTagCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "TodoTags"
+        ],
+        "operationId": "TodoTags_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/WeatherForecast": {
       "get": {
         "tags": [
@@ -490,6 +599,13 @@
           "note": {
             "type": "string",
             "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/TodoTag"
+            }
           }
         }
       },
@@ -509,6 +625,196 @@
           3
         ]
       },
+      "TodoTag": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseAuditableEntity"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "tag": {
+                "type": "string"
+              },
+              "todoItemTags": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TodoItemTag"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "TodoItemTag": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "itemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "item": {
+            "$ref": "#/components/schemas/TodoItem"
+          },
+          "tagId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tag": {
+            "$ref": "#/components/schemas/TodoTag"
+          }
+        }
+      },
+      "TodoItem": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseAuditableEntity"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "nullable": true
+              },
+              "note": {
+                "type": "string",
+                "nullable": true
+              },
+              "priority": {
+                "$ref": "#/components/schemas/PriorityLevel"
+              },
+              "reminder": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "done": {
+                "type": "boolean"
+              },
+              "listId": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "list": {
+                "$ref": "#/components/schemas/TodoList"
+              },
+              "todoItemTags": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TodoItemTag"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "TodoList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseAuditableEntity"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "nullable": true
+              },
+              "colour": {
+                "$ref": "#/components/schemas/Colour"
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TodoItem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Colour": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ValueObject"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "ValueObject": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false
+      },
+      "BaseAuditableEntity": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseEntity"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "isDeleted": {
+                "type": "boolean"
+              },
+              "created": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "createdBy": {
+                "type": "string",
+                "nullable": true
+              },
+              "lastModified": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "lastModifiedBy": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          }
+        ]
+      },
+      "BaseEntity": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "domainEvents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaseEvent"
+            }
+          }
+        }
+      },
+      "BaseEvent": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false
+      },
       "TodosVm": {
         "type": "object",
         "additionalProperties": false,
@@ -517,6 +823,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PriorityLevelDto"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TodoTagDto"
             }
           },
           "lists": {
@@ -538,6 +850,19 @@
           "name": {
             "type": "string",
             "nullable": true
+          }
+        }
+      },
+      "TodoTagDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tag": {
+            "type": "string"
           }
         }
       },
@@ -591,6 +916,12 @@
           "note": {
             "type": "string",
             "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TodoTagDto"
+            }
           }
         }
       },
@@ -613,6 +944,30 @@
             "format": "int32"
           },
           "title": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CreateTodoTagCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tag": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "UpdateTodoTagCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tag": {
             "type": "string",
             "nullable": true
           }
