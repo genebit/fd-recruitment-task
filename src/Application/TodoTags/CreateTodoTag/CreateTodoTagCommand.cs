@@ -28,7 +28,7 @@ public class CreateTodoTagCommandHandler : IRequestHandler<CreateTodoTagCommand,
 
         var entity = new TodoTag
         {
-            Tag = request.Tag
+            Tag = request.Tag.Trim()
         };
 
         entity.AddDomainEvent(new TodoTagCreatedEvent(entity));
